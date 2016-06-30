@@ -11,6 +11,8 @@ set(COMMON_SOURCE
         )
 set(TEST_SOURCE
         Testing/QueueTest.cpp
+        Testing/MultipleReadOneWriteLockTest.cpp
+        Testing/cconsTest.cpp
         )
 LINK_DIRECTORIES(${cconsTesting_SOURCE_DIR}/Dependency/)
 add_executable(ccons ${COMMON_SOURCE})

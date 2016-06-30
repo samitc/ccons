@@ -31,8 +31,8 @@ namespace Ccons
 		if (numOfReader > 0)
 		{
 			std::unique_lock<std::mutex> u(m);
-			writerCond.wait_for(u, std::chrono::duration<int, std::ratio<1, 1>>(1), [=]() {
-				return this->numOfReader > 0;
+			writerCond.wait(u, [=]() {
+				return this->numOfReader == 0;
 			});
 		}
 	}
