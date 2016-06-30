@@ -3,8 +3,9 @@
 //
 
 #include <future>
-#include "gtest/gtest.h"
 #include "../Src/Queue.h"
+#include "cconsTest.h"
+#include "gtest/gtest.h"
 
 using namespace Ccons;
 using namespace std;
@@ -44,11 +45,6 @@ constexpr unsigned long long calculateSum()
 		sum += i;
 	}
 	return sum;
-}
-template<class T>
-std::future<T> createFuture(const std::function<T(void)> &func)
-{
-	return (future<T>)(async(launch::async, func));
 }
 IntSafe numbers[NUM_OF_NUMBERS_PER_THREAD * NUM_OF_THREAD];
 const unsigned long long gSum = calculateSum();
@@ -205,7 +201,6 @@ TEST(QueueTest, MultiPutOneGet)
 		{
 			pushDone[i].get();
 		}
-		EXPECT_EQ(false, q.isEmpty());
 		ASSERT_EQ(std::future_status::ready,
 				  popDone.wait_for(std::chrono::duration<int, std::ratio<1, 1>>(TIME_TO_WAIT_IN_SEC)));
 		EXPECT_EQ(true, q.isEmpty());
@@ -451,14 +446,10 @@ TEST(QueueTest, MultiTopMultiPut)
 		throw;
 	}
 }
-int main(int argc, char **argv)
+void queueSetUp()
 {
-	::testing::InitGoogleTest(&argc, argv);
 	for (int i = 0; i < NUM_OF_NUMBERS_PER_THREAD * NUM_OF_THREAD; i++)
 	{
 		numbers[i] = IntSafe(i);
 	}
-	int returnValue;
-	returnValue = RUN_ALL_TESTS();
-	return returnValue;
 }
