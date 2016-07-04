@@ -11,7 +11,7 @@ using namespace Ccons;
 using namespace std;
 void MultipleReadOneWriteLockSetUp()
 {
-	srand(time(nullptr));
+	srand((unsigned int)(time(nullptr)));
 }
 using Time=std::chrono::high_resolution_clock;
 constexpr double MAX_TIME_DIFF = 0.001;
@@ -57,11 +57,15 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	std::shared_future<void> ready(startSignal.get_future());
 	atomic<bool> startWrite;
 	startWrite = false;
-	const int NUM_OF_READ = 10;
-	const int MIN_READ_TIME_SEC = 5;
-	const int MAX_WRITE_TIME_SEC = 25;
-	const int MAX_TIME_DIFF = 1;
+	constexpr int NUM_OF_READ = 10;
+	constexpr int MIN_READ_TIME_SEC = 5;
+	constexpr int MAX_WRITE_TIME_SEC = 25;
+	constexpr int MAX_TIME_DIFF = 1;
+#if !defined(VS_SUP) || !defined(_MSC_VER)
 	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite]() {
+#else
+	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC]() {
+#endif
 		int randNum = rand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
@@ -99,11 +103,15 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 	atomic<bool> isWriting;
 	atomic<bool> isRead;
 	isWriting = false;
-	const int NUM_OF_READ = 10;
-	const int MIN_READ_TIME_SEC = 5;
-	const int MAX_WRITE_TIME_SEC = 15;
-	const int MAX_TIME_DIFF = 1;
+	constexpr int NUM_OF_READ = 10;
+	constexpr int MIN_READ_TIME_SEC = 5;
+	constexpr int MAX_WRITE_TIME_SEC = 15;
+	constexpr int MAX_TIME_DIFF = 1;
+#if !defined(VS_SUP) || !defined(_MSC_VER)
 	auto readTask = createFutureArr<int>([&lock, &ready, &isWriting, &isRead]() {
+#else
+	auto readTask = createFutureArr<int>([&lock, &ready, &isWriting, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC]() {
+#endif
 		int randNum = rand();
 		int retVal = 0;
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
