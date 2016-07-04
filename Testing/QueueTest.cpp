@@ -60,11 +60,11 @@ TEST(QueueTest, putGetTest)
 	Queue<int> q;
 	IntSafe num(5);
 	q.enqueue(num.get());
-	EXPECT_EQ(false, q.isEmpty());
+	EXPECT_FALSE(q.isEmpty());
 	EXPECT_EQ(num.get(), q.top());
-	EXPECT_EQ(false, q.isEmpty());
+	EXPECT_FALSE(q.isEmpty());
 	EXPECT_EQ(num.get(), q.dequeue());
-	EXPECT_EQ(true, q.isEmpty());
+	EXPECT_TRUE(q.isEmpty());
 }
 TEST(QueueTest, putWaitTest)
 {
@@ -138,7 +138,7 @@ TEST(QueueTest, putWaitTopTest)
 		auto s = std::chrono::high_resolution_clock::now();
 		int *retVal = pop_done.get();
 		auto e = std::chrono::high_resolution_clock::now();
-		ASSERT_EQ(false, q.isEmpty());
+		ASSERT_FALSE(q.isEmpty());
 		EXPECT_EQ(num.get(), retVal);
 		double time = std::chrono::duration<double, std::ratio<1, 1>>(e - s).count();
 		EXPECT_NEAR(3.0, time, 0.01);
@@ -170,7 +170,7 @@ TEST(QueueTest, MultiPutOneGet)
 			int start = i;
 			int jump = NUM_OF_THREAD;
 			pushDone[i] = createFuture<void>(
-					[&q, ready, temp, &numbers, start, jump]() {
+					[&q, ready, temp, start, jump]() {
 						int max = NUM_OF_THREAD * NUM_OF_NUMBERS_PER_THREAD;
 						temp->set_value();
 						ready.wait();
@@ -245,7 +245,7 @@ TEST(QueueTest, MultiGetOnePut)
 														 );
 		}
 		pushDone = createFuture<void>(
-				[&q, ready, &pushReady, &numbers]() {
+				[&q, ready, &pushReady]() {
 					int max = NUM_OF_THREAD * NUM_OF_NUMBERS_PER_THREAD;
 					pushReady.set_value();
 					ready.wait();
@@ -330,7 +330,7 @@ TEST(QueueTest, MultiGetMultiPut)
 					}
 																		 );
 			pushDone[i] = createFuture<void>(
-					[&q, ready, temp1, &numbers, start, jump]() {
+					[&q, ready, temp1, start, jump]() {
 						int max = NUM_OF_THREAD * NUM_OF_NUMBERS_PER_THREAD;
 						temp1->set_value();
 						ready.wait();
@@ -360,7 +360,7 @@ TEST(QueueTest, MultiGetMultiPut)
 		{
 			popDone[i + NUM_OF_THREAD].get();
 		}
-		EXPECT_EQ(false, q.isEmpty());
+		EXPECT_FALSE(q.isEmpty());
 		while (!q.isEmpty())
 		{
 			sum -= *q.dequeue();
@@ -405,7 +405,7 @@ TEST(QueueTest, MultiTopMultiPut)
 					}
 										   );
 			pushDone[i] = createFuture<void>(
-					[&q, ready, temp1, &numbers, start, jump]() {
+					[&q, ready, temp1, start, jump]() {
 						int max = NUM_OF_THREAD * NUM_OF_NUMBERS_PER_THREAD;
 						temp1->set_value();
 						ready.wait();
@@ -431,7 +431,7 @@ TEST(QueueTest, MultiTopMultiPut)
 		{
 			popDone[i].get();
 		}
-		EXPECT_EQ(false, q.isEmpty());
+		EXPECT_FALSE(q.isEmpty());
 		int *num = q.dequeue();
 		while (num != nullptr)
 		{
