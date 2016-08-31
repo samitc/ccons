@@ -15,12 +15,12 @@ std::future<T> createFuture(const std::function<T(void)> &func)
 	return (future<T>)(async(launch::async, func));
 }
 template<class T>
-std::future<T> *createFutureArr(const std::function<T(void)> &func, int size)
+std::future<T> *createFutureArr(const std::function<T(int)> &func, int size)
 {
-	std::future<T> *arr=new std::future<T>[size];
+	std::future<T> *arr = new std::future<T>[size];
 	for (int i = 0; i < size; ++i)
 	{
-		arr[i]=createFuture(func);
+		arr[i] = async(launch::async, func, i);
 	}
 	return arr;
 }

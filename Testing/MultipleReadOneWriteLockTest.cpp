@@ -56,17 +56,28 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	std::promise<void> startSignal;
 	std::shared_future<void> ready(startSignal.get_future());
 	atomic<bool> startWrite;
+	atomic<bool> endRead;
 	startWrite = false;
+	endRead = false;
 	const int NUM_OF_READ = 10;
 	const int MIN_READ_TIME_SEC = 5;
 	const int MAX_WRITE_TIME_SEC = 25;
 	const int MAX_TIME_DIFF = 1;
-	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite]() {
+	bool isReadBeforeWrite[NUM_OF_READ];
+	for (int i = 0; i < NUM_OF_READ; ++i)
+	{
+		isReadBeforeWrite[i] = false;
+	}
+	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead](int index) {
 		int randNum = rand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
 		lock.startRead();
 		startWrite = true;
+		if (!endRead)
+		{
+			isReadBeforeWrite[index] = true;
+		}
 		this_thread::sleep_for(chrono::seconds(randNum));
 		lock.endRead();
 		return randNum;
@@ -76,13 +87,19 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	{ }
 	auto startTime = Time::now();
 	lock.startWrite();
+	endRead = true;
 	auto endTime = Time::now();
+	for (int i = 0; i < NUM_OF_READ; ++i)
+	{
+		ASSERT_EQ(readTask[i].wait_for(std::chrono::microseconds(0)),
+				  isReadBeforeWrite[i] ? future_status::ready : future_status::timeout);
+	}
 	lock.endWrite();
 	int maxWait = MIN_READ_TIME_SEC;
 	for (int i = 0; i < NUM_OF_READ; ++i)
 	{
 		int waitTime = readTask[i].get();
-		if (waitTime > maxWait)
+		if (isReadBeforeWrite[i] && waitTime > maxWait)
 		{
 			maxWait = waitTime;
 		}
@@ -96,22 +113,18 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 	MultipleReadOneWriteLock lock;
 	std::promise<void> startSignal;
 	std::shared_future<void> ready(startSignal.get_future());
-	atomic<bool> isWriting;
 	atomic<bool> isRead;
-	isWriting = false;
 	const int NUM_OF_READ = 10;
 	const int MIN_READ_TIME_SEC = 5;
 	const int MAX_WRITE_TIME_SEC = 15;
 	const int MAX_TIME_DIFF = 1;
-	auto readTask = createFutureArr<int>([&lock, &ready, &isWriting, &isRead]() {
+	auto readTask = createFutureArr<int>([&lock, &ready, &isRead](int index) {
 		int randNum = rand();
 		int retVal = 0;
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
 		lock.startWrite();
-		isWriting = true;
 		this_thread::sleep_for(chrono::seconds(randNum));
-		isWriting = false;
 		if (!isRead)
 		{
 			retVal = randNum;
@@ -128,7 +141,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 	int wait = 0;
 	for (int i = 0; i < NUM_OF_READ; ++i)
 	{
-		wait+=readTask[i].get();
+		wait += readTask[i].get();
 	}
 	delete[] readTask;
 	double time = chrono::duration<double, ratio<1, 1>>(endTime - startTime).count();

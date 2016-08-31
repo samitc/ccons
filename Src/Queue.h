@@ -22,7 +22,7 @@ namespace Ccons
 		struct Node
 		{
 			Node();
-			Node(T *v);
+			explicit Node(T *v);
 			Node(T *v, Node *n);
 			~Node() = default;
 			Node *getNext() const;
@@ -36,10 +36,10 @@ namespace Ccons
 	private:
 		void revalidTail();
 		void resetHead(const Node *);
-		Node *head;
-		Node *tail;
 		mutable std::mutex m;
 		mutable std::condition_variable dataAvi;
+		Node *head;
+		Node *tail;
 	};
 }
 #include "Queue.cpp"

@@ -15,16 +15,12 @@ private:
 	int num;
 public:
 	constexpr IntSafe() : num(0) { }
-	constexpr IntSafe(int num) : num(num)
+	explicit constexpr IntSafe(int num) : num(num)
 	{
 	}
 	constexpr int *get()
 	{
 		return &num;
-	}
-	constexpr void set(int num)
-	{
-		this->num = num;
 	}
 	constexpr IntSafe &operator=(const IntSafe &copy)
 	{

@@ -5,15 +5,13 @@
 namespace Ccons
 {
 	template<typename T>
-	inline Queue<T>::Queue() : m(), head(new Node(nullptr, nullptr)), tail(head), dataAvi()
+	inline Queue<T>::Queue() : m(), dataAvi(), head(new Node(nullptr, nullptr)), tail(head)
 	{
 	}
 	template<typename T>
-	Queue<T>::Queue(Queue &&queue) : m(), dataAvi()
+	Queue<T>::Queue(Queue &&queue) : m(), dataAvi(), head(queue.head), tail(queue.tail)
 	{
 		std::unique_lock<std::mutex> u(queue.m);
-		head = queue.head;
-		tail = queue.tail;
 		queue.head = nullptr;
 		queue.tail = nullptr;
 	}
