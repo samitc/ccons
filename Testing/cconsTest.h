@@ -6,6 +6,7 @@
 #define CCONSTESTING_CCONSTEST_H
 #include <future>
 
+#define VS_SUP // use to remove code that visual studio product error.
 using namespace std;
 void queueSetUp();
 void MultipleReadOneWriteLockSetUp();

@@ -18,11 +18,24 @@ public:
 	explicit constexpr IntSafe(int num) : num(num)
 	{
 	}
-	constexpr int *get()
+#if !defined(VS_SUP) || !defined(_MSC_VER)
+	constexpr
+#endif
+	int *get()
 	{
 		return &num;
 	}
-	constexpr IntSafe &operator=(const IntSafe &copy)
+#if !defined(VS_SUP) || !defined(_MSC_VER)
+	constexpr
+#endif
+		void set(int num)
+	{
+		this->num = num;
+	}
+#if !defined(VS_SUP) || !defined(_MSC_VER)
+	constexpr
+#endif
+		IntSafe &operator=(const IntSafe &copy)
 	{
 		if (this != &copy)
 		{
@@ -33,7 +46,10 @@ public:
 };
 const int NUM_OF_NUMBERS_PER_THREAD = 1000;
 const int NUM_OF_THREAD = 6;
-constexpr unsigned long long calculateSum()
+#if !defined(VS_SUP) || !defined(_MSC_VER)
+constexpr
+#endif
+unsigned long long calculateSum()
 {
 	unsigned long long sum = 0;
 	for (int i = 0; i < NUM_OF_NUMBERS_PER_THREAD * NUM_OF_THREAD; ++i)
