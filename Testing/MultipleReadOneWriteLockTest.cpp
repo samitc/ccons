@@ -125,7 +125,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 #if !defined(VS_SUP) || !defined(_MSC_VER)
 	auto readTask = createFutureArr<int>([&lock, &ready, &isRead](int index) {
 #else
-	auto readTask = createFutureArr<int>([&lock, &ready, &isWriting, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto readTask = createFutureArr<int>([&lock, &ready, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
 		int randNum = rand();
 		int retVal = 0;
