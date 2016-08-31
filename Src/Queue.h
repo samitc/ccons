@@ -9,33 +9,33 @@ namespace Ccons
 	class Queue
 	{
 	public:
-		Queue();
-		Queue(Queue &&);
-		~Queue();
-		void enqueue(T *val);
-		T *dequeue();
-		T *dequeueW();
-		bool isEmpty() const;
-		T *top() const;
-		T *topW() const;
+		inline Queue();
+		inline Queue(Queue &&);
+		inline ~Queue();
+		inline void enqueue(T *val);
+		inline T *dequeue();
+		inline T *dequeueW();
+		inline bool isEmpty() const;
+		inline T *top() const;
+		inline T *topW() const;
 	private:
 		struct Node
 		{
-			Node();
-			explicit Node(T *v);
-			Node(T *v, Node *n);
-			~Node() = default;
-			Node *getNext() const;
-			T *getVal() const;
-			void setNext(Node *n);
-			void setVal(T *v);
+			inline Node();
+			inline explicit Node(T *v);
+			inline Node(T *v, Node *n);
+			inline ~Node() = default;
+			inline Node *getNext() const;
+			inline T *getVal() const;
+			inline void setNext(Node *n);
+			inline void setVal(T *v);
 		private:
 			Node *next;
 			T *val;
 		};
 	private:
-		void revalidTail();
-		void resetHead(const Node *);
+		inline void revalidTail();
+		inline void resetHead(const Node *);
 		mutable std::mutex m;
 		mutable std::condition_variable dataAvi;
 		Node *head;
