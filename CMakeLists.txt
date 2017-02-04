@@ -12,7 +12,7 @@ set(TEST_SOURCE
         Testing/MultipleReadOneWriteLockTest.cpp
         Testing/cconsTest.cpp
         )
-LINK_DIRECTORIES(${cconsTesting_SOURCE_DIR}/Dependency/)
+LINK_DIRECTORIES(${ccons_SOURCE_DIR}/Dependency/)
 ADD_LIBRARY(ccons STATIC ${COMMON_SOURCE})
 add_executable(cconsTesting ${TEST_SOURCE})
 find_package( Threads )
@@ -20,4 +20,4 @@ target_link_libraries(cconsTesting ccons)
 TARGET_LINK_LIBRARIES(cconsTesting gtest)
 TARGET_LINK_LIBRARIES(cconsTesting ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(cconsTesting ccons)
-target_compile_options(cconsTesting PUBLIC -I${cconsTesting_SOURCE_DIR}/Dependency/gtest/include)
+target_compile_options(cconsTesting PUBLIC -I${ccons_SOURCE_DIR}/Dependency/gtest/include)
