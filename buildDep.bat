@@ -9,7 +9,7 @@ IF EXIST gtest-md (
 		IF EXIST Release (
 			cd Release
 			    IF EXIST gtest.lib (
-					copy gtest.lib ../../../../../Dependency/
+					copy "gtest.lib" "../../../../../Dependency/gtest.lib"
 				) ELSE (
 					ECHO can not find lib
 				)
@@ -18,7 +18,7 @@ IF EXIST gtest-md (
 			IF EXIST Debug (
 				cd Debug
 				IF EXIST gtestd.lib (
-					copy "gtestd.lib" "../../../../../Dependency/gtest.lib""
+					copy "gtestd.lib" "../../../../../Dependency/gtest.lib"
 				) ELSE (
 					ECHO can not find lib
 				)
@@ -37,7 +37,7 @@ IF EXIST gtest-md (
 		IF EXIST Release (
 			cd Release
 			    IF EXIST gtest.lib (
-					copy gtest.lib ../../../../../Dependency/
+					copy "gtest.lib" "../../../../../Dependency/gtest.lib"
 				) ELSE (
 					ECHO can not find lib
 				)
@@ -46,7 +46,7 @@ IF EXIST gtest-md (
 			IF EXIST Debug (
 				cd Debug
 				IF EXIST gtestd.lib (
-					copy "gtestd.lib" "../../../../../Dependency/gtest.lib""
+					copy "gtestd.lib" "../../../../../Dependency/gtest.lib"
 				) ELSE (
 					ECHO can not find lib
 				)

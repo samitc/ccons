@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 project(ccons)
-project(cconsTesting)
-find_package( Threads )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(COMMON_SOURCE
         Src/Queue.h
@@ -15,8 +13,11 @@ set(TEST_SOURCE
         Testing/cconsTest.cpp
         )
 LINK_DIRECTORIES(${cconsTesting_SOURCE_DIR}/Dependency/)
-add_executable(ccons ${COMMON_SOURCE})
-add_executable(cconsTesting ${COMMON_SOURCE} ${TEST_SOURCE})
+ADD_LIBRARY(ccons STATIC ${COMMON_SOURCE})
+add_executable(cconsTesting ${TEST_SOURCE})
+find_package( Threads )
+target_link_libraries(cconsTesting ccons)
 TARGET_LINK_LIBRARIES(cconsTesting gtest)
 TARGET_LINK_LIBRARIES(cconsTesting ${CMAKE_THREAD_LIBS_INIT})
+add_dependencies(cconsTesting ccons)
 target_compile_options(cconsTesting PUBLIC -I${cconsTesting_SOURCE_DIR}/Dependency/gtest/include)
