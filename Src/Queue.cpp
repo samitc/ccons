@@ -6,10 +6,16 @@ namespace Ccons
 {
 	template<typename T>
 	inline Queue<T>::Queue() : m(), dataAvi(), head(new Node(nullptr, nullptr)), tail(head)
+#ifdef USE_CACHE_TOREUSE_NODES
+		, cStart(nullptr)
+#endif // USE_CACHE_TOREUSE_NODES
 	{
 	}
 	template<typename T>
 	Queue<T>::Queue(Queue &&queue) : m(), dataAvi(), head(queue.head), tail(queue.tail)
+#ifdef USE_CACHE_TOREUSE_NODES
+		, cStart(nullptr)
+#endif // USE_CACHE_TOREUSE_NODES
 	{
 		std::unique_lock<std::mutex> u(queue.m);
 		queue.head = nullptr;
@@ -27,11 +33,28 @@ namespace Ccons
 	template<typename T>
 	void Queue<T>::enqueue(T *val)
 	{
+#ifdef USE_CACHE_TOREUSE_NODES
+		Node *add;
+#else
 		Node *add = new Node(val);
+#endif // USE_CACHE_TOREUSE_NODES
 		{
 			std::unique_lock<std::mutex> u(m);
-			tail->setNext(add);
-			tail = add;
+#ifdef USE_CACHE_TOREUSE_NODES
+			if (cStart == nullptr)
+			{
+				add = new Node(val);
+			}
+			else
+			{
+				add = cStart;
+				cStart = cStart->getNext();
+				add->setNext(nullptr);
+				add->setVal(val);
+			}
+#endif // USE_CACHE_TOREUSE_NODES
+				tail->setNext(add);
+				tail = add;
 		}
 		dataAvi.notify_one();
 	}
@@ -39,6 +62,7 @@ namespace Ccons
 	T *Queue<T>::dequeue()
 	{
 		Node *n;
+		T *ret;
 		{
 			std::unique_lock<std::mutex> u(m);
 			n = head->getNext();
@@ -47,15 +71,23 @@ namespace Ccons
 				return nullptr;
 			}
 			resetHead(n);
+#ifdef USE_CACHE_TOREUSE_NODES
+			ret = n->getVal();
+			n->setNext(cStart);
+			cStart = n;
+#endif // USE_CACHE_TOREUSE_NODES
 		}
-		T *ret = n->getVal();
+#ifndef USE_CACHE_TOREUSE_NODES
+		ret = n->getVal();
 		delete n;
+#endif // !USE_CACHE_TOREUSE_NODES
 		return ret;
 	}
 	template<typename T>
 	T *Queue<T>::dequeueW()
 	{
 		Node *n;
+		T *ret;
 		{
 			std::unique_lock<std::mutex> u(m);
 			Node **th = &head;
@@ -68,9 +100,16 @@ namespace Ccons
 				});
 			}
 			resetHead(n);
+#ifdef USE_CACHE_TOREUSE_NODES
+			ret = n->getVal();
+			n->setNext(cStart);
+			cStart = n;
+#endif // USE_CACHE_TOREUSE_NODES
 		}
-		T *ret = n->getVal();
+#ifndef USE_CACHE_TOREUSE_NODES
+		ret = n->getVal();
 		delete n;
+#endif // !USE_CACHE_TOREUSE_NODES
 		return ret;
 	}
 	template<typename T>

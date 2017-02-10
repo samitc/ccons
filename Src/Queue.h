@@ -40,6 +40,9 @@ namespace Ccons
 		mutable std::condition_variable dataAvi;
 		Node *head;
 		Node *tail;
+#ifdef USE_CACHE_TOREUSE_NODES
+		Node *cStart;
+#endif // USE_CACHE_TOREUSE_NODES
 	};
 }
 #include "Queue.cpp"
