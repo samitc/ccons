@@ -153,7 +153,7 @@ TEST(QueueTest, putWaitTopTest)
 		ASSERT_FALSE(q.isEmpty());
 		EXPECT_EQ(num.get(), retVal);
 		double time = std::chrono::duration<double, std::ratio<1, 1>>(e - s).count();
-		EXPECT_NEAR(3.0, time, 0.01);
+		EXPECT_NEAR(3.0, time, 0.1);
 		ASSERT_EQ(num.get(), q.dequeue());
 		push_done.get();
 	}
