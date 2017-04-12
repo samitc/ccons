@@ -13,7 +13,7 @@ total = len(sys.argv)
 platform = sys.argv[1]
 configuration = sys.argv[2]
 cmakePath = shutil.which("cmake")
-cmakeCreateArgs = [cmakePath,
+cmakeCreateArgs = [cmakePath,"-Dgtest_force_shared_crt=ON",
                    "." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "CMakeLists.txt"]
 if total == 4:
     generetor = sys.argv[3]
