@@ -34,6 +34,7 @@ elif os.path.exists(
                                                                         "." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "libgtest.a"):
     gtestLibName = "libgtest.a"
     gtestLibPath = "." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "libgtest.a"
-os.rename(gtestLibPath, "." + os.sep + "Dependency" + os.sep + gtestLibName);
-shutil.copytree("." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "include",
+os.rename(gtestLibPath, "." + os.sep + "Dependency" + os.sep + gtestLibName)
+if not os.path.exists("." + os.sep + "Dependency" + os.sep + "gtest" + os.sep + "include"):
+    shutil.copytree("." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "include",
                 "." + os.sep + "Dependency" + os.sep + "gtest" + os.sep + "include")
