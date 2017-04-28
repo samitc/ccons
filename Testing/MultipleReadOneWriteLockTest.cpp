@@ -9,9 +9,20 @@
 
 using namespace Ccons;
 using namespace std;
+std::atomic_flag isRandFin = ATOMIC_FLAG_INIT;
+volatile unsigned int preRand;
 void MultipleReadOneWriteLockSetUp()
 {
-	srand((unsigned int)(time(nullptr)));
+	srand((unsigned int)time(nullptr));
+	preRand = rand();
+}
+int mRand()
+{
+	while (isRandFin.test_and_set());
+	srand(preRand);
+	preRand = rand();
+	isRandFin.clear();
+	return preRand;
 }
 using Time=std::chrono::high_resolution_clock;
 constexpr double MAX_TIME_DIFF = 0.001;
@@ -73,7 +84,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 #else
 	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
-		int randNum = rand();
+		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
 		lock.startRead();
@@ -117,7 +128,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 	MultipleReadOneWriteLock lock;
 	std::promise<void> startSignal;
 	std::shared_future<void> ready(startSignal.get_future());
-	atomic<bool> isRead;
+	atomic<bool> isRead(false);
 	constexpr int NUM_OF_READ = 10;
 	constexpr int MIN_READ_TIME_SEC = 5;
 	constexpr int MAX_WRITE_TIME_SEC = 15;
@@ -127,7 +138,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 #else
 	auto readTask = createFutureArr<int>([&lock, &ready, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
-		int randNum = rand();
+		int randNum = mRand();
 		int retVal = 0;
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
@@ -160,7 +171,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteMiddelRead)
 	MultipleReadOneWriteLock lock;
 	std::promise<void> startSignal;
 	std::shared_future<void> ready(startSignal.get_future());
-	atomic<bool> isRead;
+	atomic<bool> isRead(false);
 	constexpr int NUM_OF_READ = 10;
 	constexpr int MIN_READ_TIME_SEC = 5;
 	constexpr int MAX_WRITE_TIME_SEC = 15;
@@ -170,13 +181,16 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteMiddelRead)
 #else
 	auto readTask = createFutureArr<int>([&lock, &ready, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
-		int randNum = rand();
+		int randNum = mRand();
 		int retVal = 0;
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
 		if (randNum > 10)
 		{
-			while (!isRead);
+			while (!isRead)
+			{
+				this_thread::sleep_for(chrono::milliseconds(100));
+			}
 		}
 		lock.startWrite();
 		this_thread::sleep_for(chrono::seconds(randNum));
@@ -201,7 +215,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteMiddelRead)
 	delete[] readTask;
 	double time = chrono::duration<double, ratio<1, 1>>(endTime - startTime).count();
 	ASSERT_NEAR(wait, time, MAX_TIME_DIFF);
-}
+	}
 TEST(MultipleReadOneWriteLockTest, testInterface)
 {
 	MultipleReadOneWriteLock lock;
@@ -209,8 +223,8 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 	std::shared_future<void> ready(startSignal.get_future());
 	constexpr int NUM_OF_READ = 50;
 	constexpr int NUM_OF_WRITE = 50;
-	constexpr int MIN_READ_TIME_SEC = 10;
-	constexpr int MAX_WRITE_TIME_SEC = 30;
+	constexpr int MIN_READ_TIME_SEC = 5;
+	constexpr int MAX_WRITE_TIME_SEC = 25;
 	std::atomic<int> numOfReaders(0);
 	std::atomic<int> numOfWriters(0);
 #if !defined(VS_SUP) || !defined(_MSC_VER)
@@ -218,7 +232,7 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 #else
 	auto readTask = createFutureArr<void>([&lock, &ready, &numOfReaders, &numOfWriters, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
-		int randNum = rand();
+		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
 		this_thread::sleep_for(chrono::seconds(randNum) * 5);
@@ -234,7 +248,7 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 #else
 	auto writeTask = createFutureArr<void>([&lock, &ready, &numOfWriters, &numOfReaders, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
-		int randNum = rand();
+		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
 		this_thread::sleep_for(chrono::seconds(randNum) * 5);
