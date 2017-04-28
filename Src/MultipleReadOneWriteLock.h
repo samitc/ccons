@@ -21,6 +21,8 @@ namespace Ccons
 		std::condition_variable readerCond;
 		std::atomic<unsigned int> numOfReader;
 		std::atomic<bool> isWriting;
+		std::atomic<unsigned int> numOfWriter;
+		std::atomic_flag isWriterCanRun = ATOMIC_FLAG_INIT;
 	};
 }
 #endif
