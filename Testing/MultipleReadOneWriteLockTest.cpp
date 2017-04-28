@@ -211,8 +211,8 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 	constexpr int NUM_OF_WRITE = 50;
 	constexpr int MIN_READ_TIME_SEC = 10;
 	constexpr int MAX_WRITE_TIME_SEC = 30;
-	std::atomic<int> numOfReaders = 0;
-	std::atomic<int> numOfWriters = 0;
+	std::atomic<int> numOfReaders(0);
+	std::atomic<int> numOfWriters(0);
 #if !defined(VS_SUP) || !defined(_MSC_VER)
 	auto readTask = createFutureArr<void>([&lock, &ready, &numOfReaders, &numOfWriters](int index) {
 #else
