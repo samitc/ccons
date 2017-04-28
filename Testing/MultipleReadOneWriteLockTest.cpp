@@ -221,10 +221,10 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 	MultipleReadOneWriteLock lock;
 	std::promise<void> startSignal;
 	std::shared_future<void> ready(startSignal.get_future());
-	constexpr int NUM_OF_READ = 50;
-	constexpr int NUM_OF_WRITE = 50;
+	constexpr int NUM_OF_READ = 40;
+	constexpr int NUM_OF_WRITE = 40;
 	constexpr int MIN_READ_TIME_SEC = 5;
-	constexpr int MAX_WRITE_TIME_SEC = 25;
+	constexpr int MAX_WRITE_TIME_SEC = 15;
 	std::atomic<int> numOfReaders(0);
 	std::atomic<int> numOfWriters(0);
 #if !defined(VS_SUP) || !defined(_MSC_VER)
@@ -235,7 +235,7 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
-		this_thread::sleep_for(chrono::seconds(randNum) * 5);
+		this_thread::sleep_for(chrono::seconds(randNum) * 2);
 		lock.startRead();
 		++numOfReaders;
 		ASSERT_EQ(0, numOfWriters);
@@ -251,7 +251,7 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
-		this_thread::sleep_for(chrono::seconds(randNum) * 5);
+		this_thread::sleep_for(chrono::seconds(randNum) * 2);
 		lock.startWrite();
 		++numOfWriters;
 		ASSERT_EQ(1, numOfWriters);
