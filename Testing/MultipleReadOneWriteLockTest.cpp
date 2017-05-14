@@ -68,8 +68,10 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	std::shared_future<void> ready(startSignal.get_future());
 	atomic<bool> startWrite;
 	atomic<bool> endRead;
+	atomic<bool> startRead;
 	startWrite = false;
 	endRead = false;
+	startRead = false;
 	constexpr int NUM_OF_READ = 10;
 	constexpr int MIN_READ_TIME_SEC = 5;
 	constexpr int MAX_WRITE_TIME_SEC = 25;
@@ -80,13 +82,17 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 		isReadBeforeWrite[i] = false;
 	}
 #if !defined(VS_SUP) || !defined(_MSC_VER)
-	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead](int index) {
+	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, &startRead](int index) {
 #else
-	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, &startRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
 #endif
 		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
-		ready.wait();
+		if (index != 0)
+		{
+			ready.wait();
+		}
+		startRead = true;
 		lock.startRead();
 		startWrite = true;
 		if (!endRead)
@@ -97,17 +103,16 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 		lock.endRead();
 		return randNum;
 	}, NUM_OF_READ);
+	while (startRead == false);
 	startSignal.set_value();
-	while (!startWrite)
-	{ }
 	auto startTime = Time::now();
 	lock.startWrite();
-	endRead = true;
 	auto endTime = Time::now();
+	endRead = true;
 	for (int i = 0; i < NUM_OF_READ; ++i)
 	{
 		ASSERT_EQ(readTask[i].wait_for(std::chrono::microseconds(0)),
-				  isReadBeforeWrite[i] ? future_status::ready : future_status::timeout);
+			isReadBeforeWrite[i] ? future_status::ready : future_status::timeout);
 	}
 	lock.endWrite();
 	int maxWait = MIN_READ_TIME_SEC;
@@ -122,7 +127,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	delete[] readTask;
 	double time = chrono::duration<double, ratio<1, 1>>(endTime - startTime).count();
 	ASSERT_NEAR(maxWait, time, MAX_TIME_DIFF);
-}
+	}
 TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 {
 	MultipleReadOneWriteLock lock;
