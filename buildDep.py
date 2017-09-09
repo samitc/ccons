@@ -13,7 +13,10 @@ total = len(sys.argv)
 platform = sys.argv[1]
 configuration = sys.argv[2]
 cmakePath = shutil.which("cmake")
-cmakeCreateArgs = [cmakePath,"-Dgtest_force_shared_crt=ON",
+if cmakePath is None:
+    print("can not find cmake")
+    exit(1)
+cmakeCreateArgs = [cmakePath, "-Dgtest_force_shared_crt=ON",
                    "." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "CMakeLists.txt"]
 if total == 4:
     generetor = sys.argv[3]
@@ -36,5 +39,6 @@ elif os.path.exists(
     gtestLibPath = "." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "libgtest.a"
 os.rename(gtestLibPath, "." + os.sep + "Dependency" + os.sep + gtestLibName)
 if not os.path.exists("." + os.sep + "Dependency" + os.sep + "gtest" + os.sep + "include"):
-    shutil.copytree("." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "include",
-                "." + os.sep + "Dependency" + os.sep + "gtest" + os.sep + "include")
+    shutil.copytree(
+        "." + os.sep + "DependencyModules" + os.sep + "googletest" + os.sep + "googletest" + os.sep + "include",
+        "." + os.sep + "Dependency" + os.sep + "gtest" + os.sep + "include")

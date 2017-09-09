@@ -13,7 +13,6 @@ namespace Ccons
 		{
 			endRead();
 			std::unique_lock<std::mutex> u(m);
-			writerCond.notify_one();
 			readerCond.wait(u, [=]() {
 				return !this->isWriting;
 			});

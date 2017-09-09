@@ -81,11 +81,11 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	{
 		isReadBeforeWrite[i] = false;
 	}
-#if !defined(VS_SUP) || !defined(_MSC_VER)
-	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, &startRead](int index) {
-#else
-	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, &startRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto readTask = createFutureArr<int>([&lock, &ready, &startWrite, &isReadBeforeWrite, &endRead, &startRead
+#if defined(VS_SUP) && defined(_MSC_VER)
+	, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC
 #endif
+	](int index) {
 		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		if (index != 0)
@@ -98,8 +98,8 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 		if (!endRead)
 		{
 			isReadBeforeWrite[index] = true;
+			this_thread::sleep_for(chrono::seconds(randNum));
 		}
-		this_thread::sleep_for(chrono::seconds(randNum));
 		lock.endRead();
 		return randNum;
 	}, NUM_OF_READ);
@@ -111,7 +111,7 @@ TEST(MultipleReadOneWriteLockTest, testMultiReadWrite)
 	endRead = true;
 	for (int i = 0; i < NUM_OF_READ; ++i)
 	{
-		ASSERT_EQ(readTask[i].wait_for(std::chrono::microseconds(0)),
+		ASSERT_EQ(readTask[i].wait_for(1s),
 			isReadBeforeWrite[i] ? future_status::ready : future_status::timeout);
 	}
 	lock.endWrite();
@@ -138,11 +138,11 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteRead)
 	constexpr int MIN_READ_TIME_SEC = 5;
 	constexpr int MAX_WRITE_TIME_SEC = 15;
 	constexpr int MAX_TIME_DIFF = 1;
-#if !defined(VS_SUP) || !defined(_MSC_VER)
-	auto readTask = createFutureArr<int>([&lock, &ready, &isRead](int index) {
-#else
-	auto readTask = createFutureArr<int>([&lock, &ready, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto readTask = createFutureArr<int>([&lock, &ready, &isRead
+#if defined(VS_SUP) && defined(_MSC_VER)
+	, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC
 #endif
+	](int index) {
 		int randNum = mRand();
 		int retVal = 0;
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
@@ -181,11 +181,11 @@ TEST(MultipleReadOneWriteLockTest, testMultiWriteMiddelRead)
 	constexpr int MIN_READ_TIME_SEC = 5;
 	constexpr int MAX_WRITE_TIME_SEC = 15;
 	constexpr int MAX_TIME_DIFF = 1;
-#if !defined(VS_SUP) || !defined(_MSC_VER)
-	auto readTask = createFutureArr<int>([&lock, &ready, &isRead](int index) {
-#else
-	auto readTask = createFutureArr<int>([&lock, &ready, &isRead, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto readTask = createFutureArr<int>([&lock, &ready, &isRead
+#if defined(VS_SUP) && defined(_MSC_VER)
+	, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC
 #endif
+	](int index) {
 		int randNum = mRand();
 		int retVal = 0;
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
@@ -232,11 +232,11 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 	constexpr int MAX_WRITE_TIME_SEC = 15;
 	std::atomic<int> numOfReaders(0);
 	std::atomic<int> numOfWriters(0);
-#if !defined(VS_SUP) || !defined(_MSC_VER)
-	auto readTask = createFutureArr<void>([&lock, &ready, &numOfReaders, &numOfWriters](int index) {
-#else
-	auto readTask = createFutureArr<void>([&lock, &ready, &numOfReaders, &numOfWriters, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto readTask = createFutureArr<void>([&lock, &ready, &numOfReaders, &numOfWriters
+#if defined(VS_SUP) && defined(_MSC_VER)
+		, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC
 #endif
+	](int index) {
 		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
@@ -248,11 +248,11 @@ TEST(MultipleReadOneWriteLockTest, testInterface)
 		--numOfReaders;
 		lock.endRead();
 	}, NUM_OF_READ);
-#if !defined(VS_SUP) || !defined(_MSC_VER)
-	auto writeTask = createFutureArr<void>([&lock, &ready, &numOfWriters, &numOfReaders](int index) {
-#else
-	auto writeTask = createFutureArr<void>([&lock, &ready, &numOfWriters, &numOfReaders, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC](int index) {
+	auto writeTask = createFutureArr<void>([&lock, &ready, &numOfWriters, &numOfReaders
+#if defined(VS_SUP) && defined(_MSC_VER)
+		, MIN_READ_TIME_SEC, MAX_WRITE_TIME_SEC
 #endif
+	](int index) {
 		int randNum = mRand();
 		randNum = MIN_READ_TIME_SEC + randNum % (MAX_WRITE_TIME_SEC - MIN_READ_TIME_SEC);
 		ready.wait();
