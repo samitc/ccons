@@ -5,7 +5,7 @@
 namespace Ccons
 {
 	template<typename T>
-	inline Queue<T>::Queue() : m(), dataAvi(), head(new Node(nullptr, nullptr)), tail(head)
+	inline Queue<T>::Queue() : m(), dataAvi(), head(new Node<T>(nullptr, nullptr)), tail(head)
 #ifdef USE_CACHE_TOREUSE_NODES
 		, cStart(nullptr)
 #endif // USE_CACHE_TOREUSE_NODES
@@ -34,16 +34,16 @@ namespace Ccons
 	void Queue<T>::enqueue(T *val)
 	{
 #ifdef USE_CACHE_TOREUSE_NODES
-		Node *add;
+		Node<T> *add;
 #else
-		Node *add = new Node(val);
+		Node<T> *add = new Node<T>(val);
 #endif // USE_CACHE_TOREUSE_NODES
 		{
 			std::unique_lock<std::mutex> u(m);
 #ifdef USE_CACHE_TOREUSE_NODES
 			if (cStart == nullptr)
 			{
-				add = new Node(val);
+				add = new Node<T>(val);
 			}
 			else
 			{
@@ -61,7 +61,7 @@ namespace Ccons
 	template<typename T>
 	T *Queue<T>::dequeue()
 	{
-		Node *n;
+		Node<T> *n;
 		T *ret;
 		{
 			std::unique_lock<std::mutex> u(m);
@@ -86,11 +86,11 @@ namespace Ccons
 	template<typename T>
 	T *Queue<T>::dequeueW()
 	{
-		Node *n;
+		Node<T> *n;
 		T *ret;
 		{
 			std::unique_lock<std::mutex> u(m);
-			Node **th = &head;
+			Node<T> **th = &head;
 			n = head->getNext();
 			if (n == nullptr)
 			{
@@ -122,7 +122,7 @@ namespace Ccons
 	T *Queue<T>::top() const
 	{
 		std::unique_lock<std::mutex> u(m);
-		Node *n = head->getNext();
+		Node<T> *n = head->getNext();
 		if (n == nullptr)
 		{
 			return nullptr;
@@ -133,8 +133,8 @@ namespace Ccons
 	T *Queue<T>::topW() const
 	{
 		std::unique_lock<std::mutex> u(m);
-		Node *n = head->getNext();
-		Node *const *th = &head;
+		Node<T> *n = head->getNext();
+		Node<T> *const *th = &head;
 		if (n == nullptr)
 		{
 			dataAvi.wait(u, [th, &n]() {
@@ -154,42 +154,10 @@ namespace Ccons
 		}
 	}
 	template<typename T>
-	void Queue<T>::resetHead(const Node *n)
+	void Queue<T>::resetHead(const Node<T> *n)
 	{
 		head->setNext(n->getNext());
 		revalidTail();
-	}
-	template<typename T>
-	Queue<T>::Node::Node() : Node(nullptr, nullptr)
-	{
-	}
-	template<typename T>
-	Queue<T>::Node::Node(T *v) : Node(v, nullptr)
-	{
-	}
-	template<typename T>
-	Queue<T>::Node::Node(T *v, Node *n) : val(v), next(n)
-	{
-	}
-	template<typename T>
-	typename Queue<T>::Node *Queue<T>::Node::getNext() const
-	{
-		return next;
-	}
-	template<typename T>
-	T *Queue<T>::Node::getVal() const
-	{
-		return val;
-	}
-	template<typename T>
-	void Queue<T>::Node::setNext(Node *n)
-	{
-		next = n;
-	}
-	template<typename T>
-	void Queue<T>::Node::setVal(T *v)
-	{
-		val = v;
 	}
 }
 #endif

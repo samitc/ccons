@@ -2,6 +2,7 @@
 #define _QUEUE_H_
 #include <mutex>
 #include <condition_variable>
+#include "Node.h"
 
 namespace Ccons
 {
@@ -19,29 +20,14 @@ namespace Ccons
 		inline T *top() const;
 		inline T *topW() const;
 	private:
-		struct Node
-		{
-			inline Node();
-			inline explicit Node(T *v);
-			inline Node(T *v, Node *n);
-			inline ~Node() = default;
-			inline Node *getNext() const;
-			inline T *getVal() const;
-			inline void setNext(Node *n);
-			inline void setVal(T *v);
-		private:
-			Node *next;
-			T *val;
-		};
-	private:
 		inline void revalidTail();
-		inline void resetHead(const Node *);
+		inline void resetHead(const Node<T> *);
 		mutable std::mutex m;
 		mutable std::condition_variable dataAvi;
-		Node *head;
-		Node *tail;
+		Node<T> *head;
+		Node<T> *tail;
 #ifdef USE_CACHE_TOREUSE_NODES
-		Node *cStart;
+		Node<T> *cStart;
 #endif // USE_CACHE_TOREUSE_NODES
 	};
 }
