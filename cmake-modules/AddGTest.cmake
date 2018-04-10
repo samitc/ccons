@@ -23,9 +23,10 @@ set(GTEST_CMAKE_ARGS
         "-Dgtest_force_shared_crt=ON"
         "-Dgtest_disable_pthreads:BOOL=${DISABLE_PTHREADS}"
         "-DBUILD_GTEST=ON"
-		"-DCMAKE_DEBUG_POSTFIX=")
+        "-DBUILD_GMOCK=OFF")
 set(GTEST_RELEASE_LIB_DIR "")
 set(GTEST_DEBUGLIB_DIR "")
+set(CMAKE_DEBUG_POSTFIX "d")
 if (MSVC)
     set(GTEST_CMAKE_ARGS ${GTEST_CMAKE_ARGS}
             "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=${DEBUG_LIB_DIR}"
@@ -58,7 +59,7 @@ else (NOT GIT_FOUND)
     set(LIB_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
     set(GTEST_LOCATION "${GTEST_PREFIX}/src/gtest-build")
     set(GTEST_DEBUG_LIBRARIES
-            "${LIB_PREFIX}gtest${LIB_SUFFIX}${CMAKE_DEBUG_POSTFIX}"
+            "${LIB_PREFIX}gtest${CMAKE_DEBUG_POSTFIX}${LIB_SUFFIX}"
             "${CMAKE_THREAD_LIBS_INIT}")
     SET(GTEST_RELEASE_LIBRARIES
             "${LIB_PREFIX}gtest${LIB_SUFFIX}"
@@ -73,7 +74,7 @@ else (NOT GIT_FOUND)
     include_directories(${source_dir}/gtest/include)
 
     ExternalProject_Get_Property(gtest binary_dir)
-    link_directories(${binary_dir}/googlemock/gtest)
-    link_directories(${binary_dir}/googlemock/gtest/${RELEASE_LIB_DIR})
-    link_directories(${binary_dir}/googlemock/gtest/${DEBUG_LIB_DIR})
+    link_directories(${binary_dir}/googletest)
+    link_directories(${binary_dir}/googletest/${RELEASE_LIB_DIR})
+    link_directories(${binary_dir}/googletest/${DEBUG_LIB_DIR})
 endif (NOT GIT_FOUND)
